@@ -66,9 +66,14 @@ const LeftSection = styled.div`
   gap: 24px;
   min-width: 0;
   overflow: hidden;
+  padding-bottom: 24px;
   
   @media (max-width: 1200px) {
     grid-row: 1;
+  }
+
+  & > :last-child {
+    margin-top: -15px;
   }
 `;
 
