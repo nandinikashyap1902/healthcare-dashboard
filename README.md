@@ -1,6 +1,12 @@
-# Getting Started with Create React App
+# Healthcare Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A single-page "Healthcare Dashboard" built with React, focusing on accurately recreating a clean, functional healthcare dashboard design. The dashboard features a distinct header, a fixed navigation sidebar, and a dynamic main content area displaying health data, an anatomical illustration with associated info, and an appointment scheduling overview.
+
+This project was created as an assignment to demonstrate the ability to:
+- Break down a complex UI into reusable React components
+- Manage and display static data from mock JavaScript sources via props
+- Apply styling for pixel-perfect visual fidelity to the provided design image
+- Ensure full responsiveness across different screen sizes
 
 ## Available Scripts
 
