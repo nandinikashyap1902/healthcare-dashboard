@@ -21,7 +21,7 @@ const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <Logo>HealthTrack</Logo>
+      <Logo>HealthCare</Logo>
       <SectionTitle>General</SectionTitle>
       <NavList>
         {navLinks.map((link) => (

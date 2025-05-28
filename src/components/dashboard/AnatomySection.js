@@ -37,9 +37,16 @@ const bodyParts = [
 
 const AnatomySection = () => {
   const [hoveredPart, setHoveredPart] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
-  const handlePartHover = (part) => {
+  const handlePartHover = (part, e) => {
     setHoveredPart(part);
+    // Get the position of the hovered element
+    const rect = e.target.getBoundingClientRect();
+    setTooltipPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
   };
 
   return (
@@ -52,26 +59,35 @@ const AnatomySection = () => {
             alt="Human Anatomy" 
             onMouseLeave={() => setHoveredPart(null)}
           />
-          {hoveredPart && (
-            <Tooltip>
-              <TooltipHeader>
-                <TooltipIcon>{hoveredPart.icon}</TooltipIcon>
-                <TooltipTitle>{hoveredPart.name}</TooltipTitle>
-              </TooltipHeader>
-              <TooltipStatus color={hoveredPart.color}>
-                Status: {hoveredPart.status}
-              </TooltipStatus>
-            </Tooltip>
-          )}
           {bodyParts.map((part) => (
             <BodyPart
               key={part.id}
-              onMouseEnter={() => handlePartHover(part)}
+              onMouseMove={(e) => handlePartHover(part, e)}
+              onMouseLeave={() => setHoveredPart(null)}
               area={part.id}
-            />
+              isActive={hoveredPart?.id === part.id}
+            >
+              {hoveredPart?.id === part.id && (
+                <Tooltip 
+                  x={tooltipPosition.x} 
+                  y={tooltipPosition.y}
+                  position={part.id === 'pelvis' ? 'top' : 'bottom'}
+                >
+                  <TooltipHeader>
+                    <TooltipIcon>{part.icon}</TooltipIcon>
+                    <TooltipTitle>{part.name}</TooltipTitle>
+                  </TooltipHeader>
+                  <TooltipStatus color={part.color}>
+                    Status: {part.status}
+                  </TooltipStatus>
+                </Tooltip>
+              )}
+            </BodyPart>
           ))}
         </AnatomyImageContainer>
-        <HealthStatusCards />
+        <HealthStatusCardsWrapper>
+          <HealthStatusCards />
+        </HealthStatusCardsWrapper>
       </AnatomyContent>
     </AnatomyContainer>
   );
@@ -93,23 +109,24 @@ const AnatomyTitle = styled.h2`
 `;
 
 const AnatomyContent = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  display: flex;
+  gap: 2rem;
   align-items: flex-start;
+  
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 `;
 
 const AnatomyImageContainer = styled.div`
   position: relative;
-  width: 100%;
-  padding-top: 133.33%; /* 3:4 aspect ratio */
+  width: 70%;
+  padding-top: 93.33%; /* 3:4 aspect ratio */
   border-radius: 12px;
   overflow: hidden;
   background: #f8f9fa;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 `;
 
 const AnatomyImg = styled.img`
@@ -126,63 +143,123 @@ const BodyPart = styled.div`
   position: absolute;
   z-index: 2;
   cursor: pointer;
-  
-  border: 2px solid transparent;
   transition: all 0.2s ease;
-  border-radius: 4px;
   
-  ${({ area }) => {
+  &::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0;
+  }
+  
+  ${({ area, isActive }) => {
     switch (area) {
       case 'head':
         return `
-          top: 5%;
+          top: 12%;
           left: 40%;
           width: 20%;
           height: 15%;
+          
+          &::before {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            ${isActive ? 'opacity: 1;' : ''}
+          }
         `;
       case 'chest':
         return `
-          top: 20%;
+          top: 25%;
           left: 30%;
           width: 40%;
-          height: 25%;
+          height: 20%;
+          
+          &::before {
+            top: 20%;
+            right: 20%;
+            ${isActive ? 'opacity: 1;' : ''}
+          }
         `;
       case 'lungs':
         return `
-          top: 25%;
+          top: 28%;
           left: 35%;
           width: 30%;
-          height: 20%;
+          height: 18%;
+          
+          &::before {
+            top: 20%;
+            right: 20%;
+            ${isActive ? 'opacity: 1;' : ''}
+          }
         `;
       case 'pelvis':
         return `
-          top: 45%;
-          left: 32.5%;
-          width: 35%;
-          height: 30%;
+          top: 48%;
+          left: 35%;
+          width: 30%;
+          height: 25%;
+          
+          &::before {
+            bottom: 20%;
+            right: 20%;
+            ${isActive ? 'opacity: 1;' : ''}
+          }
         `;
       default:
         return '';
     }
   }}
-
-  &:hover {
-    background: rgba(76, 175, 80, 0.3);
-    border-color: #4CAF50;
+  
+  &:hover::before {
+    opacity: 1;
   }
 `;
 
-const Tooltip = styled.div`
+const Tooltip = styled.div.attrs(props => ({
+  style: {
+    left: `${props.x + 10}px`,
+    top: props.position === 'top' ? 'auto' : `${props.y + 10}px`,
+    bottom: props.position === 'top' ? `${window.innerHeight - props.y + 10}px` : 'auto',
+  }
+}))`
   position: absolute;
   background: white;
-  padding: 12px;
+  padding: 0.6rem 0.8rem;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10;
   pointer-events: none;
-  min-width: 120px;
-  top: 20px;
-  right: 20px;
+  min-width: 140px;
+  font-size: 0.85rem;
+  transform: ${props => props.position === 'top' ? 'translateY(10px)' : 'translateY(-10px)'};
+  opacity: 0;
+  animation: fadeIn 0.2s ease forwards;
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: ${props => props.position === 'top' ? 'translateY(0)' : 'translateY(0)'};
+    }
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 16px;
+    height: 16px;
+    background: white;
+    z-index: -1;
+    box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const TooltipHeader = styled.div`
@@ -209,6 +286,14 @@ const TooltipStatus = styled.div`
   font-size: 0.85rem;
   color: ${props => props.color || '#666'};
   margin-top: 2px;
+`;
+
+const HealthStatusCardsWrapper = styled.div`
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 `;
 
 export default AnatomySection;
